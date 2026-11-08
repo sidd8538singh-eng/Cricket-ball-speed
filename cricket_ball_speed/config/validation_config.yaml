@@ -1,0 +1,28 @@
+# ==============================================================================
+# Quality Control, Physical Plausibility and Radar Benchmark Configuration
+# ==============================================================================
+
+quality_control:
+  min_valid_ball_detections: 5
+  min_consecutive_detections: 3
+  max_prediction_gap_frames: 3
+  min_release_confidence: 0.55
+  max_reprojection_rmse_px: 5.5
+  max_depth_uncertainty_m: 1.8
+  max_speed_uncertainty_kmh: 8.5
+  
+  # Physical speed plausibility bounds (Cricket pace & spin range)
+  min_plausible_speed_kmh: 30.0     # Slow spin bowling
+  max_plausible_speed_kmh: 175.0    # Fastest recorded cricket delivery is ~161.3 km/h
+  
+  # C1-C2 distance window
+  c1_c2_min_distance_m: 4.5
+  c1_c2_max_distance_m: 8.5
+  min_c1_c2_duration_sec: 0.08
+
+radar_validation:
+  enabled: true
+  primary_tolerance_kmh: 2.0        # Grade A measurement tier (+- 2 km/h)
+  secondary_tolerance_kmh: 5.0      # Grade B measurement tier (+- 5 km/h)
+  outlier_tolerance_kmh: 10.0
+  bias_warning_threshold_kmh: 3.0

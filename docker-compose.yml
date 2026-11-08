@@ -1,0 +1,43 @@
+# ==============================================================================
+# Cricket Ball Speed Analyzer - Docker Compose Configuration
+# Production deployment for DigitalOcean Droplet
+# ==============================================================================
+
+version: "3.8"
+
+services:
+  cricket-speed:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cricket-ball-speed
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - MAX_UPLOAD_SIZE_MB=${MAX_UPLOAD_SIZE_MB:-500}
+    volumes:
+      # Persistent storage mount: saves uploads, reports, videos, and locked calibrations
+      - ./storage:/app/storage
+      - ./cricket_ball_speed/storage/temp:/app/cricket_ball_speed/storage/temp
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 4096M
+        reservations:
+          memory: 1024M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "5"

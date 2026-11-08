@@ -1,0 +1,53 @@
+# ==============================================================================
+# Camera and Pitch Geometry Configuration
+# ==============================================================================
+
+physical_dimensions:
+  # Standard ICC / MCC cricket regulations
+  # Distance between the two bowling creases (through stump centres): 20.12 m (22 yards)
+  pitch_length_crease_to_crease_m: 20.12
+
+  # Distance between near wicket base centre and far wicket base centre
+  # When wickets are pitched directly on the bowling crease, this equals 20.12 m
+  wicket_distance_m: 20.12
+
+  # Offset between wicket base centre and bowling crease line (if any)
+  wicket_to_crease_offset_m: 0.0
+
+  # Pitch width between the outer pitch markings: 3.048 m (10 ft)
+  pitch_width_m: 3.048
+
+  # Official stump height above ground: 0.711 m (28 inches)
+  stump_height_m: 0.711
+
+  # Official cricket ball diameter: 0.0715 m (approx 7.15 cm)
+  ball_diameter_m: 0.0715
+
+  # Official cricket ball mass: 0.160 kg (approx 5.5 to 5.75 ounces)
+  ball_mass_kg: 0.160
+
+  # Popping crease distance in front of bowling crease: 1.2192 m (4 ft)
+  popping_crease_offset_m: 1.2192
+
+camera_mounting:
+  # Target mounting position relative to near stumps (A = 0,0,0)
+  nominal_camera_height_m: 2.0
+  nominal_camera_distance_behind_m: 2.0  # Camera Y is -2.0 m
+  
+  # Acceptable tolerances for physical installation check
+  camera_height_min_m: 1.4
+  camera_height_max_m: 2.8
+  camera_distance_behind_min_m: 1.0
+  camera_distance_behind_max_m: 4.0
+
+calibration_constraints:
+  # Reprojection error limits across the 8 reference points
+  max_mean_reprojection_error_px: 5.0
+  max_per_point_reprojection_error_px: 9.0
+  reprojection_warning_threshold_px: 3.5
+
+  # Camera intrinsics priors (when principal point is centered)
+  assume_zero_skew: true
+  assume_square_pixels: true
+  estimate_distortion: true
+  distortion_model: "rad_tan" # radial-tangential k1, k2, p1, p2

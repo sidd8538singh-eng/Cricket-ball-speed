@@ -1,0 +1,23 @@
+# Core Scientific & Computer Vision
+numpy>=1.24.0
+opencv-python>=4.8.0
+scipy>=1.10.0
+PyYAML>=6.0
+openpyxl>=3.1.0
+
+# Deep Learning & Object Detection
+torch>=2.0.0
+ultralytics>=8.0.0
+
+# Production Web Server & ASGI
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+gunicorn>=21.2.0
+python-multipart>=0.0.6
+websockets>=12.0
+pydantic>=2.0.0
+httpx>=0.24.0
+python-dotenv>=1.0.0
+
+# Testing Framework
+pytest>=7.0.0

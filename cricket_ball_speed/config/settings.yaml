@@ -1,0 +1,61 @@
+# ==============================================================================
+# Cricket Ball Speed - Global System Settings
+# ==============================================================================
+
+system:
+  name: "CricketBallSpeed"
+  version: "1.0.0"
+  device: "auto"              # "auto", "cpu", "cuda", "cuda:0"
+  log_level: "INFO"           # "DEBUG", "INFO", "WARNING", "ERROR"
+  log_dir: "storage/logs"
+  results_dir: "storage/results"
+  calibration_dir: "storage/calibration"
+  temp_dir: "storage/temp"
+
+video:
+  min_fps: 59.0               # Minimum acceptable framerate
+  target_fps: 120.0           # Ideal broadcast framerate
+  check_camera_stability: true
+  max_camera_displacement_px: 3.5  # Max frame-to-frame pixel drift
+  optical_flow_points: 150    # Corner features tracked for stability
+  optical_flow_sample_stride: 5 # Evaluate stability every N frames
+  max_frame_gap_interpolate: 3 # Max missing frames to interpolate in Kalman
+
+tracking:
+  kalman_2d_process_noise: 2.0
+  kalman_2d_measurement_noise: 1.5
+  kalman_3d_process_noise: 0.5
+  kalman_3d_measurement_noise: 0.8
+  gravity_m_s2: 9.80665
+  max_consecutive_predictions: 4
+
+release:
+  search_window_start_sec: 0.0
+  search_window_end_sec: 1.5
+  min_release_height_m: 1.6
+  max_release_height_m: 2.8
+  min_hand_ball_distance_px: 5.0
+  separation_velocity_threshold_px: 12.0
+
+reconstruction:
+  enable_air_drag: true
+  air_drag_coefficient: 0.50
+  air_density_kg_m3: 1.225
+  ball_mass_kg: 0.160
+  apparent_diameter_weight: 0.25
+  ray_reprojection_weight: 1.0
+
+output:
+  video:
+    codec: "mp4v"
+    generate_final: true
+    generate_diagnostic: true
+    badge_position: "upper_left" # upper_left region
+    badge_offset_x: 48
+    badge_offset_y: 48
+    freeze_last_frame_seconds: 1.5
+    show_timestamp: true
+    date_format: "%Y-%m-%d %H:%M:%S"
+  reports:
+    generate_json: true
+    generate_excel: true

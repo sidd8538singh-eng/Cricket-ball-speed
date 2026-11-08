@@ -1,0 +1,25 @@
+[Unit]
+Description=Cricket Ball Speed Analyzer FastAPI Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/cricket-ball-speed
+Environment="PATH=/var/www/cricket-ball-speed/venv/bin:/usr/local/bin:/usr/bin"
+Environment="PORT=8000"
+Environment="HOST=127.0.0.1"
+Environment="LOG_LEVEL=INFO"
+ExecStart=/var/www/cricket-ball-speed/venv/bin/python main.py server --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5s
+
+# Standard output and error logging to journald
+StandardOutput=journal
+StandardError=journal
+
+# Security settings
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

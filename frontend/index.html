@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cricket Bowling Speed Analyzer | Pro Corporate League</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23ef4444'/><path d='M30 15 Q50 50 30 85 M70 15 Q50 50 70 85' stroke='white' stroke-width='4' fill='none'/></svg>">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="top-header">
+    <div class="brand-wrapper">
+      <div class="brand-icon-box">
+        ⚾
+      </div>
+      <div class="brand-titles">
+        <span class="brand-league">PRO CORPORATE LEAGUE</span>
+        <span class="brand-sub"> Cricket Vision & DRS Analytics Platform</span>
+      </div>
+    </div>
+
+    <div class="header-status-group">
+      <div id="cameraStatusPill" class="status-pill">
+        <span class="status-dot"></span>
+        <span id="cameraStatusText">Camera Offline</span>
+      </div>
+
+      <div id="systemStatusPill" class="status-pill online">
+        <span class="status-dot"></span>
+        <span id="systemStatusText">DRS Models Loaded</span>
+      </div>
+
+      <button id="settingsBtn" class="header-btn" title="Model & Calibration Settings">
+        ⚙ Settings
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- Hero Title Section -->
+    <section class="hero-section">
+      <h1 class="hero-title">CRICKET BOWLING <span class="highlight">SPEED ANALYZER</span></h1>
+      <p class="hero-subtitle">
+        Analyze bowling speed using automatic stump detection, 20.12m DRS-line calibration,
+        Kalman ball tracking, 3D trajectory reconstruction, and computer vision.
+      </p>
+    </section>
+
+    <!-- Mode Selector Cards -->
+    <section class="mode-selector-wrapper">
+      <div id="modeCardLive" class="mode-card active">
+        <span class="mode-badge">Real-Time</span>
+        <div class="mode-icon">📷</div>
+        <div class="mode-content">
+          <h3>LIVE CAMERA</h3>
+          <p>Connect a camera and analyze bowling speed in real time.</p>
+        </div>
+      </div>
+
+      <div id="modeCardVideo" class="mode-card">
+        <span class="mode-badge">Precision</span>
+        <div class="mode-icon">🎬</div>
+        <div class="mode-content">
+          <h3>INPUT VIDEO</h3>
+          <p>Upload a recorded bowling video for detailed speed analysis.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         MODE 1: LIVE CAMERA VIEW
+         ===================================================================== -->
+    <section id="liveModeView" class="mode-view active">
+      <div class="workspace-grid">
+
+        <!-- Live Camera Viewport -->
+        <div class="viewport-card">
+          <div class="viewport-header">
+            <h2 class="viewport-title">
+              <span>Live Video Stream</span>
+            </h2>
+            <div class="viewport-controls">
+              <select id="cameraDeviceSelect" class="header-btn" style="min-width: 180px;">
+                <option value="0">Default Camera (Device 0)</option>
+              </select>
+              <button id="startCameraBtn" class="btn btn-primary" style="width: auto; padding: 6px 16px;">
+                ▶ Start Camera
+              </button>
+              <button id="stopCameraBtn" class="btn btn-danger" style="width: auto; padding: 6px 16px; display: none;">
+                ⏹ Stop Camera
+              </button>
+            </div>
+          </div>
+
+          <div class="canvas-container">
+            <video id="liveVideo" autoplay playsinline muted style="display: none;"></video>
+            <canvas id="liveCanvas" class="canvas-overlay"></canvas>
+
+            <!-- HUD Overlay -->
+            <div class="canvas-hud">
+              <div id="liveStumpsBadge" class="hud-badge warning">
+                <span>STUMPS:</span> <strong id="liveStumpsText">Searching...</strong>
+              </div>
+              <div id="liveDrsBadge" class="hud-badge drs" style="display: none;">
+                <span>DRS:</span> <strong id="liveDrsText">20.12m Line Generated</strong>
+              </div>
+              <div id="liveStabilityBadge" class="hud-badge success">
+                <span>CAMERA:</span> <strong id="liveStabilityText">Stationary</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Calibration & Speed Panel -->
+        <aside class="side-panel">
+
+          <!-- Live Speed Card -->
+          <div class="speed-hero-card">
+            <span class="speed-title">Bowling Release Speed</span>
+            <div class="speed-readout">
+              <span id="liveSpeedNumber">--.-</span>
+              <span class="speed-unit">KM/H</span>
+            </div>
+            <div id="liveMeasurementBadge" class="measurement-pill not-measured">
+              NOT_MEASURED
+            </div>
+
+            <div class="speed-submetrics">
+              <div class="submetric-item">
+                <span class="submetric-label">C1-C2 Average</span>
+                <span id="liveC1C2Speed" class="submetric-val">--.- km/h</span>
+              </div>
+              <div class="submetric-item">
+                <span class="submetric-label">Uncertainty</span>
+                <span id="liveUncertainty" class="submetric-val">±0.0 km/h</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Telemetry Card -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3 class="panel-title">Calibration Status</h3>
+              <span id="liveCalibPill" class="status-pill">Pending</span>
+            </div>
+
+            <div class="telemetry-list">
+              <div class="telemetry-row">
+                <span class="telemetry-label">Near Wicket</span>
+                <span id="liveNearWicketVal" class="telemetry-val">Searching</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">Far Wicket</span>
+                <span id="liveFarWicketVal" class="telemetry-val">Searching</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">DRS Reference Line</span>
+                <span id="liveDrsStatusVal" class="telemetry-val">Not Generated</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">Pitch Surface</span>
+                <span id="livePitchStatusVal" class="telemetry-val">Model Inactive</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">Camera Stability</span>
+                <span id="liveStabilityVal" class="telemetry-val success">Stable</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">Reprojection Error</span>
+                <span id="liveReprojVal" class="telemetry-val">-- px</span>
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button id="liveAutoCalibBtn" class="btn btn-primary">
+                ⚡ Auto Calibrate Live Feed
+              </button>
+              <button id="liveConfirmCalibBtn" class="btn btn-success" disabled>
+                ✓ Confirm & Lock Calibration
+              </button>
+              <button id="liveResetCalibBtn" class="btn btn-secondary">
+                ↺ Reset Calibration
+              </button>
+            </div>
+          </div>
+
+        </aside>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         MODE 2: INPUT VIDEO VIEW
+         ===================================================================== -->
+    <section id="videoModeView" class="mode-view">
+
+      <!-- Upload Panel with Subtle Pink/Red Dashed Border -->
+      <div id="uploadPanel" class="upload-card-dashed">
+        <div class="upload-icon-circle">
+          ⬆
+        </div>
+        <h4>SELECT OR DRAG & DROP CRICKET VIDEO</h4>
+        <p>Upload a high-frame-rate cricket bowling video (MP4, MOV, or AVI up to 500 MB) for speed and trajectory analysis.</p>
+        <span class="upload-specs">Formats: MP4, MOV, AVI • Up to 500 MB • 60+ FPS Recommended</span>
+        <input type="file" id="videoFileInput" accept=".mp4,.mov,.avi" style="display: none;">
+        <button id="browseVideoBtn" class="btn btn-primary" style="width: auto; padding: 10px 24px;">
+          📁 Browse Computer
+        </button>
+      </div>
+
+      <!-- Sample Videos Quick Picker -->
+      <div class="sample-videos-bar">
+        <span class="sample-videos-title">One-Click Test Deliveries:</span>
+        <div id="sampleChipsList" style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="sample-chip" data-path="sample_delivery.mp4">
+            ⚡ sample_delivery.mp4 (High Speed)
+          </button>
+        </div>
+      </div>
+
+      <!-- Video Workspace (Visible once video is loaded) -->
+      <div id="videoWorkspace" class="workspace-grid" style="display: none;">
+
+        <!-- Calibration Frame & Video Scrubber Viewport -->
+        <div class="viewport-card">
+          <div class="viewport-header">
+            <h2 class="viewport-title">
+              <span>Calibration Frame & DRS Geometry</span>
+            </h2>
+            <div class="viewport-controls">
+              <button id="zoomInBtn" class="header-btn" title="Zoom In">+</button>
+              <button id="zoomOutBtn" class="header-btn" title="Zoom Out">-</button>
+              <button id="resetViewBtn" class="header-btn" title="Reset View">100%</button>
+              <button id="autoSelectFrameBtn" class="header-btn" title="Auto Select Best Frame">
+                🎯 Auto-Select Frame
+              </button>
+            </div>
+          </div>
+
+          <div class="canvas-container">
+            <img id="calibrationFrameImg" style="display: none;">
+            <canvas id="videoCanvas" class="canvas-overlay"></canvas>
+
+            <!-- HUD Overlay -->
+            <div class="canvas-hud">
+              <div id="videoStumpsBadge" class="hud-badge warning">
+                <span>STUMPS:</span> <strong id="videoStumpsText">Checking...</strong>
+              </div>
+              <div id="videoDrsBadge" class="hud-badge drs" style="display: none;">
+                <span>DRS:</span> <strong id="videoDrsText">20.12m Reference Line</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Playback & Scrubber Controls -->
+          <div class="playback-bar">
+            <button id="stepBackBtn" class="header-btn" title="Step Back 1 Frame">◀</button>
+            <button id="playPauseBtn" class="header-btn" title="Play / Pause">▶ Play</button>
+            <button id="stepForwardBtn" class="header-btn" title="Step Forward 1 Frame">▶</button>
+
+            <input type="range" id="frameSlider" class="scrubber-slider" min="0" max="100" value="0">
+            <span id="timeReadout" class="time-readout">00:00 [0/0]</span>
+          </div>
+        </div>
+
+        <!-- Video Calibration Controls & Action Panel -->
+        <aside class="side-panel">
+
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3 class="panel-title">Video Calibration</h3>
+              <span id="videoCalibStatusPill" class="status-pill">Pending</span>
+            </div>
+
+            <div class="telemetry-list">
+              <div class="telemetry-row">
+                <span class="telemetry-label">Video Metadata</span>
+                <span id="videoMetaVal" class="telemetry-val">--</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">Stump Detections</span>
+                <span id="videoStumpCountVal" class="telemetry-val">0 / 2</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">DRS Line Status</span>
+                <span id="videoDrsVal" class="telemetry-val">Not Generated</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">DRS Pixel Length</span>
+                <span id="videoDrsLengthVal" class="telemetry-val">-- px</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">Reprojection Error</span>
+                <span id="videoReprojVal" class="telemetry-val">-- px</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">Pitch Corners</span>
+                <span id="videoPitchCornersVal" class="telemetry-val">Unavailable</span>
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button id="videoAutoCalibBtn" class="btn btn-primary">
+                ⚡ Auto Calibrate Stumps & DRS
+              </button>
+              <button id="toggleCorrectionBtn" class="btn btn-secondary">
+                ✏ Manual Landmark Correction
+              </button>
+              <button id="confirmVideoCalibBtn" class="btn btn-success" disabled>
+                ✓ Confirm & Lock Calibration
+              </button>
+              <button id="startAnalysisBtn" class="btn btn-primary" style="background: var(--navy-accent);" disabled>
+                🚀 Analyze Complete Delivery
+              </button>
+            </div>
+          </div>
+
+          <!-- Video Specs Information -->
+          <div class="panel-card" style="background: var(--bg-secondary);">
+            <div class="panel-header">
+              <h4 class="panel-title" style="font-size: 16px;">Delivery Details</h4>
+            </div>
+            <div class="telemetry-list" style="font-size: 12px;">
+              <div class="telemetry-row">
+                <span class="telemetry-label">Filename</span>
+                <span id="metaFilename" class="telemetry-val" style="word-break: break-all;">--</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">Resolution</span>
+                <span id="metaResolution" class="telemetry-val">--</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">Frame Rate</span>
+                <span id="metaFps" class="telemetry-val">--</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">Total Duration</span>
+                <span id="metaDuration" class="telemetry-val">--</span>
+              </div>
+            </div>
+          </div>
+
+        </aside>
+      </div>
+
+      <!-- Analysis Progress Bar (Visible while analysis runs) -->
+      <div id="analysisProgressCard" class="progress-card" style="display: none;">
+        <div class="progress-header">
+          <span id="progressStageText" class="progress-stage-name">Initializing Analysis...</span>
+          <span id="progressPctText" class="progress-pct-readout">0%</span>
+        </div>
+        <div class="progress-track">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Analysis Results Dashboard (Visible when analysis completes) -->
+      <div id="analysisResultsDashboard" class="results-card" style="display: none;">
+        <div class="viewport-header">
+          <h2 class="viewport-title">
+            <span>Delivery Speed Results & Diagnostics</span>
+          </h2>
+          <span id="resultsMeasurementBadge" class="measurement-pill measured">MEASURED</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+          <div class="speed-hero-card" style="padding: 16px;">
+            <span class="speed-title" style="font-size: 14px;">Release Speed</span>
+            <div class="speed-readout" style="font-size: 52px;">
+              <span id="resultReleaseSpeed">--.-</span>
+              <span class="speed-unit">KM/H</span>
+            </div>
+            <span id="resultUncertainty" style="font-size: 12px; color: #94a3b8;">±0.0 km/h uncertainty</span>
+          </div>
+
+          <div class="panel-card" style="justify-content: center;">
+            <div class="telemetry-row">
+              <span class="telemetry-label">C1-C2 Average Speed:</span>
+              <span id="resultC1C2Speed" class="telemetry-val">--.- km/h</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">Quality Score:</span>
+              <span id="resultQcScore" class="telemetry-val success">-- / 100</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">Measurement Status:</span>
+              <span id="resultStatusVal" class="telemetry-val">MEASURED</span>
+            </div>
+            <div class="telemetry-row">
+              <span class="telemetry-label">Rejection Reason:</span>
+              <span id="resultRejectionVal" class="telemetry-val">None</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabbed Media Outputs -->
+        <div class="tabs-nav">
+          <button class="tab-btn active" data-tab="tabFinalVideo">Broadcast Final Video</button>
+          <button class="tab-btn" data-tab="tabDiagVideo">Diagnostic Video</button>
+          <button class="tab-btn" data-tab="tabAuditReport">Audit JSON Report</button>
+          <button class="tab-btn" data-tab="tabDownloads">Downloads & Exports</button>
+        </div>
+
+        <!-- Tab 1: Final Processed Video -->
+        <div id="tabFinalVideo" class="tab-content active">
+          <video id="finalVideoPlayer" class="video-player-frame" controls playsinline></video>
+        </div>
+
+        <!-- Tab 2: Diagnostic Video -->
+        <div id="tabDiagVideo" class="tab-content">
+          <video id="diagVideoPlayer" class="video-player-frame" controls playsinline></video>
+        </div>
+
+        <!-- Tab 3: Audit JSON Report -->
+        <div id="tabAuditReport" class="tab-content">
+          <pre id="jsonReportText" style="background: var(--bg-secondary); padding: 16px; border-radius: var(--border-radius-md); font-family: var(--font-mono); font-size: 12px; max-height: 400px; overflow: auto; border: 1px solid var(--border-subtle);"></pre>
+        </div>
+
+        <!-- Tab 4: Downloads Center -->
+        <div id="tabDownloads" class="tab-content">
+          <div class="downloads-grid">
+            <a id="dlFinalVideo" class="download-tile" href="#" download>
+              <span class="download-icon">🎬</span>
+              <strong>Final Video</strong>
+              <small>MP4 with broadcast speed badge</small>
+            </a>
+            <a id="dlDiagVideo" class="download-tile" href="#" download>
+              <span class="download-icon">🔍</span>
+              <strong>Diagnostic Video</strong>
+              <small>MP4 with trajectory & C1-C2 lines</small>
+            </a>
+            <a id="dlJsonReport" class="download-tile" href="#" download>
+              <span class="download-icon">📄</span>
+              <strong>Audit Report</strong>
+              <small>Full JSON delivery telemetry</small>
+            </a>
+            <a id="dlExcelReport" class="download-tile" href="#" download>
+              <span class="download-icon">📊</span>
+              <strong>Excel Summary</strong>
+              <small>17-column benchmark XLSX</small>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal-backdrop">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="panel-title">System & Detection Settings</h3>
+        <button id="closeSettingsBtn" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="telemetry-list">
+        <div class="telemetry-row">
+          <span class="telemetry-label">Stumps Detection Threshold:</span>
+          <input type="number" id="settingStumpsConf" min="0.05" max="0.95" step="0.05" value="0.20" style="padding: 4px; width: 80px;">
+        </div>
+        <div class="telemetry-row">
+          <span class="telemetry-label">Wicket Distance Constraint:</span>
+          <span class="telemetry-val">20.12 metres</span>
+        </div>
+        <div class="telemetry-row">
+          <span class="telemetry-label">Stump Height Constraint:</span>
+          <span class="telemetry-val">0.711 metres</span>
+        </div>
+        <div class="telemetry-row">
+          <span class="telemetry-label">Ball Diameter Constraint:</span>
+          <span class="telemetry-val">0.0715 metres</span>
+        </div>
+        <div class="telemetry-row">
+          <span class="telemetry-label">Inference Processing Device:</span>
+          <span id="settingDeviceVal" class="telemetry-val">Auto (GPU/CPU)</span>
+        </div>
+      </div>
+      <button id="saveSettingsBtn" class="btn btn-primary">Save Settings</button>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

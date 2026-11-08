@@ -1,0 +1,56 @@
+# ==============================================================================
+# YOLO Models and Object Detection Configuration
+# ==============================================================================
+
+models:
+  ball:
+    path: "models/ball.pt"
+    required: true
+    confidence_threshold: 0.15      # Keep low-confidence candidates for temporal filtering
+    nms_iou_threshold: 0.40
+    input_size: [640, 640]
+    classes: [0]                    # Target class IDs (sports ball / cricket ball)
+    class_names: ["ball"]
+
+  bowler:
+    path: "models/bowler.pt"
+    required: true
+    confidence_threshold: 0.35
+    nms_iou_threshold: 0.45
+    input_size: [640, 640]
+    classes: [0]                    # Target class IDs (person / bowler)
+    class_names: ["bowler"]
+
+  stumps:
+    path: "models/stumps.pt"
+    required: true
+    confidence_threshold: 0.30
+    nms_iou_threshold: 0.45
+    input_size: [640, 640]
+    classes: [0]                    # Stumps class
+    class_names: ["stumps"]
+
+  pitch:
+    path: "models/pitch.pt"
+    required: false                 # Pitch detection is optional because 4 corners are manually calibrated
+    confidence_threshold: 0.30
+    nms_iou_threshold: 0.50
+    input_size: [640, 640]
+    classes: [0]
+    class_names: ["pitch"]
+
+inference:
+  device: "auto"                    # "auto", "cpu", "cuda:0"
+  half_precision: false             # FP16 if supported
+  batch_size: 1
+  
+  # Tiled inference for high-res frames to catch tiny ball
+  tiled_inference:
+    enabled: true
+    tile_width: 640
+    tile_height: 640
+    overlap_ratio_x: 0.20
+    overlap_ratio_y: 0.20
+    upscale_factor: 1.0             # Optional image upscaling factor (e.g. 1.5 or 2.0 for distant tiny ball detection)
+    tile_min_conf: 0.12             # Low confidence floor to preserve motion-blurred ball candidates
+    merge_iou_threshold: 0.35
